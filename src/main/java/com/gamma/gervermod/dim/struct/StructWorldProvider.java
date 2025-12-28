@@ -10,9 +10,6 @@
 
 package com.gamma.gervermod.dim.struct;
 
-import java.util.HashMap;
-
-import net.minecraft.init.Blocks;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldProviderSurface;
@@ -20,9 +17,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManagerHell;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.gen.ChunkProviderFlat;
-import net.minecraft.world.gen.FlatGeneratorInfo;
-import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraftforge.client.IRenderHandler;
 
 public class StructWorldProvider extends WorldProvider {
@@ -38,36 +32,7 @@ public class StructWorldProvider extends WorldProvider {
 
     @Override
     public IChunkProvider createChunkGenerator() {
-        FlatGeneratorInfo flatgeneratorinfo = new FlatGeneratorInfo();
-        flatgeneratorinfo.setBiome(BiomeGenBase.plains.biomeID);
-        flatgeneratorinfo.getFlatLayers()
-            .add(new FlatLayerInfo(1, Blocks.bedrock));
-        flatgeneratorinfo.getFlatLayers()
-            .add(new FlatLayerInfo(67, Blocks.stone));
-        flatgeneratorinfo.getFlatLayers()
-            .add(new FlatLayerInfo(2, Blocks.dirt));
-        flatgeneratorinfo.getFlatLayers()
-            .add(new FlatLayerInfo(1, Blocks.grass));
-        flatgeneratorinfo.func_82645_d();
-        flatgeneratorinfo.getWorldFeatures()
-            .put("village", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("biome_1", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("mineshaft", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("decoration", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("lake", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("lava_lake", new HashMap<>());
-        flatgeneratorinfo.getWorldFeatures()
-            .put("dungeon", new HashMap<>());
-        return new ChunkProviderFlat(
-            this.worldObj,
-            (long) (Math.random() * Long.MAX_VALUE),
-            true,
-            flatgeneratorinfo.toString());
+        return new FastChunkProviderFlat(this.worldObj);
     }
 
     @Override

@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.6",
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "package": "com.gamma.gervermod.mixin",
+  "refmap": "mixins.gervermod.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(DEFAULT)",
+  "mixins": [
+    "fixes.RandomTickSpeedMixin",
+    "structworld.BedrockOreMixin",
+    "structworld.BiomeDecoratorMixin",
+    "structworld.DepthDepositMixin",
+    "structworld.DungeonToolboxMixin",
+    "structworld.EtFuturumLateWorldGeneratorMixin",
+    "structworld.EtFuturumWorldGeneratorMixin",
+    "structworld.NBTStructureMixin",
+    "structworld.ThreadBackupMixin"
+  ],
+  "client": []
+}
