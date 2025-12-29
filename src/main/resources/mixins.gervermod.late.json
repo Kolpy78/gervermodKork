@@ -10,7 +10,11 @@
   "target": "@env(LATE)",
   "plugin": "com.gamma.gervermod.core.GervermodMixinPlugin",
   "mixins": [
+    "fixes.AE2SpatialFixMixin",
+    "fixes.NEINPEFixMixin",
+    "fixes.PacketNewStorageDimensionMixin",
     "fixes.RandomTickSpeedMixin",
+    "fixes.ServerTabInfoAIOOBFixMixin",
     "structworld.BedrockOreMixin",
     "structworld.DepthDepositMixin",
     "structworld.DungeonToolboxMixin",

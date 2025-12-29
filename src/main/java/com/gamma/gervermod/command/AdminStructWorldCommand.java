@@ -17,7 +17,7 @@ public class AdminStructWorldCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/adminstructworld <kick|disallow|timer>";
+        return "/adminstructworld <kick|disallow|allow|timer>";
     }
 
     @Override
@@ -26,6 +26,8 @@ public class AdminStructWorldCommand extends CommandBase {
             StructDimHandler.kick();
         } else if (args[0].equalsIgnoreCase("disallow")) {
             StructDimHandler.disallow();
+        } else if (args[0].equalsIgnoreCase("allow")) {
+            StructDimHandler.allow();
         } else if (args[0].equalsIgnoreCase("timer")) {
             StructDimHandler.nextClearMillis = System.currentTimeMillis() + Integer.parseInt(args[1]);
         } else throw new WrongUsageException("/adminstructworld <kick|disallow|timer>");
@@ -33,6 +35,6 @@ public class AdminStructWorldCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "kick", "disallow", "timer") : null;
+        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "kick", "disallow", "allow", "timer") : null;
     }
 }

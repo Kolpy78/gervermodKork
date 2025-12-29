@@ -2,6 +2,7 @@ package com.gamma.gervermod.dim.struct;
 
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 import java.util.Stack;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -26,7 +27,6 @@ public class StructDimHandler {
 
     public static long nextClearMillis;
     private static int stage = 0;
-    private static int ticksSinceUnload = 0;
     private static boolean override = false;
 
     private static final Object2BooleanMap<EntityPlayer> playersQueued = new Object2BooleanOpenHashMap<>();
@@ -95,18 +95,17 @@ public class StructDimHandler {
 
             kick();
 
+            // Now we have everyone out of the world, still loaded.
             world.flush();
             DimensionManager.unloadWorld(structDim);
             stage = 5;
         } else if (stage == 5) {
             if (DimensionManager.getWorld(structDim) != null) {
-                ticksSinceUnload++;
-                if (ticksSinceUnload >= 10) sendMessageToAllPlayers(
-                    new ChatComponentText(
-                        EnumChatFormatting.RED + "Structure dimension took too long to unload; unable to clear!"
-                            + EnumChatFormatting.RESET));
                 return; // Wait until it's unloaded...
             }
+
+            DimensionManager.setWorld(structDim, null); // absolutely make sure it's unloaded.
+
             // World is unloaded and we have full access over the directories.
             // It's time to do the thing.
             File rootDirectory = DimensionManager.getCurrentSaveRootDirectory();
@@ -115,6 +114,12 @@ public class StructDimHandler {
             GerverMod.LOG.info("Deleting world directory: {}{}DIM{}", rootDirectory, File.separatorChar, structDim);
             recursivelyDeleteDirectory(worldDirectory);
             GerverMod.LOG.info("Deleted world directory: {}{}DIM{}", rootDirectory, File.separatorChar, structDim);
+
+            // Re-init dimension.
+            DimensionManager.initDimension(structDim);
+            WorldServer world = DimensionManager.getWorld(structDim);
+            world.rand = new Random();
+            ((StructWorldProvider) world.provider).nextSeed();
 
             sendMessageToAllPlayers(
                 new ChatComponentText(
@@ -171,6 +176,10 @@ public class StructDimHandler {
 
     public static void disallow() {
         override = true;
+    }
+
+    public static void allow() {
+        override = false;
     }
 
     private static final Stack<File> toDelete = new Stack<>();

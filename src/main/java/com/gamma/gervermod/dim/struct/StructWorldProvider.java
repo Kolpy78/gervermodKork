@@ -10,6 +10,8 @@
 
 package com.gamma.gervermod.dim.struct;
 
+import java.util.Random;
+
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldProviderSurface;
@@ -25,9 +27,21 @@ public class StructWorldProvider extends WorldProvider {
 
     }
 
+    private static final Random rand = new Random();
+    private long seed = rand.nextLong();
+
+    void nextSeed() {
+        seed = rand.nextLong();
+    }
+
     @Override
     protected void registerWorldChunkManager() {
         super.worldChunkMgr = new WorldChunkManagerHell(BiomeGenBase.plains, 0.0F);
+    }
+
+    @Override
+    public long getSeed() {
+        return seed;
     }
 
     @Override
