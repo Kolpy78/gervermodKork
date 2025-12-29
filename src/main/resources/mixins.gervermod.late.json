@@ -11,6 +11,7 @@
   "plugin": "com.gamma.gervermod.core.GervermodMixinPlugin",
   "mixins": [
     "fixes.AE2SpatialFixMixin",
+    "fixes.CloudflaredCommandListFixMixin",
     "fixes.NEINPEFixMixin",
     "fixes.PacketNewStorageDimensionMixin",
     "fixes.RandomTickSpeedMixin",
