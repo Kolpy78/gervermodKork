@@ -2,7 +2,9 @@ package com.gamma.gervermod.command;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -126,6 +128,11 @@ public class StructWorldCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        String keyword = "enter";
+        boolean hasEnter = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase(keyword));
+        if (args.length == 2 && hasEnter) {
+            return getListOfStringsMatchingLastWord(args, "plains", "desert");
+        }
         return args.length == 1 ? getListOfStringsMatchingLastWord(args, "enter", "leave", "cancel") : null;
     }
 
