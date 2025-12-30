@@ -1,18 +1,20 @@
 package com.gamma.gervermod.dim.struct;
 
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManagerHell;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.client.IRenderHandler;
 
-import com.hbm.dim.WorldProviderCelestial;
+import java.util.Random;
 
-public class StructWorldProvider extends WorldProviderCelestial {
+public class StructWorldDesert extends WorldProvider {
 
-    public StructWorldProvider() {
+    public StructWorldDesert() {
 
     }
 
@@ -24,8 +26,8 @@ public class StructWorldProvider extends WorldProviderCelestial {
     }
 
     @Override
-    public void registerWorldChunkManager() {
-        super.worldChunkMgr = new WorldChunkManagerHell(BiomeGenBase.plains, 0.0F);
+    protected void registerWorldChunkManager() {
+        super.worldChunkMgr = new WorldChunkManagerHell(BiomeGenBase.desert, 0.0F);
     }
 
     @Override
@@ -35,10 +37,10 @@ public class StructWorldProvider extends WorldProviderCelestial {
 
     @Override
     public IChunkProvider createChunkGenerator() {
-        Block grass = Block.getBlockById(2);
-        Block dirt = Block.getBlockById(3);
+        Block sand = Block.getBlockById(12);
+        Block sandstone = Block.getBlockById(24);
         Block stone = Block.getBlockById(1);
-        return new FastChunkProviderFlat(this.worldObj, grass, dirt, stone);
+        return new FastChunkProviderFlat(this.worldObj, sand, sandstone, stone);
     }
 
     @Override
@@ -48,7 +50,13 @@ public class StructWorldProvider extends WorldProviderCelestial {
 
     @Override
     public String getDimensionName() {
-        return "Structure World";
+        return "Desert Structure World";
+    }
+
+    @Override
+    public IRenderHandler getSkyRenderer() {
+        return WorldProviderSurface.getProviderForDimension(0)
+            .getSkyRenderer();
     }
 
     @Override
@@ -65,4 +73,10 @@ public class StructWorldProvider extends WorldProviderCelestial {
     public boolean isBlockHighHumidity(final int x, final int y, final int z) {
         return false;
     }
+
+    @Override
+    public boolean canDoLightning(final Chunk chunk) {
+        return false;
+    }
 }
+

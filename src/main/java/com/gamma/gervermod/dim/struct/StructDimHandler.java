@@ -1,10 +1,10 @@
 package com.gamma.gervermod.dim.struct;
 
 import java.io.File;
-import java.util.List;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 
+import cpw.mods.fml.common.FMLLog;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -20,23 +20,27 @@ import com.gamma.gervermod.core.GerverMod;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import scala.Int;
 
 public class StructDimHandler {
 
     public static final int structDim = 400;
+    public static final int desertStructDim = 401;
+    public static final int[] allDims = {structDim, desertStructDim};
 
     public static long nextClearMillis;
     private static int stage = 0;
     private static boolean override = false;
 
-    private static final Object2BooleanMap<EntityPlayer> playersQueued = new Object2BooleanOpenHashMap<>();
+    private static final HashMap<EntityPlayer, Integer> playersQueued = new HashMap<>();
 
     public static void onTick() {
         long currentTimeMillis = System.currentTimeMillis();
-
-        for (Object2BooleanMap.Entry<EntityPlayer> returnEntry : playersQueued.object2BooleanEntrySet()) {
+//Object2BooleanMap.Entry<EntityPlayer> returnEntry : playersQueued.entrySet()
+        for (Map.Entry<EntityPlayer, Integer> returnEntry : playersQueued.entrySet()) {
             boolean satisfied = false;
-            if (returnEntry.getBooleanValue() && joinsAllowed()) {
+            //note to future: 400 is for regular structureworld, 401 is for the desert "flavor" remember to use parenthesis so the && evaluates the two of them!
+            if (returnEntry.getValue() == 400 && joinsAllowed()){
                 MinecraftServer.getServer()
                     .getConfigurationManager()
                     .transferPlayerToDimension(
@@ -46,7 +50,17 @@ public class StructDimHandler {
                             MinecraftServer.getServer()
                                 .worldServerForDimension(structDim)));
                 satisfied = true;
-            } else if (!returnEntry.getBooleanValue()) {
+            } else if (returnEntry.getValue() == 401 && joinsAllowed()){
+                MinecraftServer.getServer()
+                    .getConfigurationManager()
+                    .transferPlayerToDimension(
+                        (EntityPlayerMP) returnEntry.getKey(),
+                        desertStructDim,
+                        new StructDimTeleporter(
+                            MinecraftServer.getServer()
+                                .worldServerForDimension(desertStructDim)));
+                satisfied = true;
+            } else if (returnEntry.getValue() != 400 && returnEntry.getValue() != 401){
                 MinecraftServer.getServer()
                     .getConfigurationManager()
                     .transferPlayerToDimension(
@@ -57,8 +71,8 @@ public class StructDimHandler {
                                 .worldServerForDimension(0)));
                 satisfied = true;
             }
-            if (satisfied) {
-                playersQueued.removeBoolean(returnEntry.getKey());
+            if (satisfied){
+                playersQueued.remove(returnEntry.getKey());
             }
         }
 
@@ -90,47 +104,62 @@ public class StructDimHandler {
                 new ChatComponentText(
                     EnumChatFormatting.GREEN + "Structure dimension clearing now..." + EnumChatFormatting.RESET));
 
-            WorldServer world = MinecraftServer.getServer()
-                .worldServerForDimension(structDim);
+            for (int dimID : allDims){
+                WorldServer world = MinecraftServer.getServer()
+                    .worldServerForDimension(structDim);
+                WorldServer world2 = MinecraftServer.getServer().worldServerForDimension(desertStructDim);
+                kick(dimID);
 
-            kick();
-
-            // Now we have everyone out of the world, still loaded.
-            world.flush();
-            DimensionManager.unloadWorld(structDim);
-            stage = 5;
+                // Now we have everyone out of the world, still loaded.
+                world.flush();
+                world2.flush();
+                DimensionManager.unloadWorld(structDim);
+                DimensionManager.unloadWorld(desertStructDim);
+                stage = 5;
+            }
         } else if (stage == 5) {
-            if (DimensionManager.getWorld(structDim) != null) {
-                return; // Wait until it's unloaded...
+            for (int dimID : allDims){
+                if (DimensionManager.getWorld(dimID) != null) {
+                    return; // Wait until it's unloaded...
+                }
             }
 
-            DimensionManager.setWorld(structDim, null); // absolutely make sure it's unloaded.
+            for (int dimID : allDims){
+                DimensionManager.setWorld(dimID, null);// absolutely make sure it's unloaded.
+            }
 
             // World is unloaded and we have full access over the directories.
             // It's time to do the thing.
-            File rootDirectory = DimensionManager.getCurrentSaveRootDirectory();
-            File worldDirectory = new File(rootDirectory, "DIM" + structDim);
+           for (int dimID : allDims){
+               File rootDirectory = DimensionManager.getCurrentSaveRootDirectory();
+               File worldDirectory = new File(rootDirectory, "DIM" + dimID);
 
-            GerverMod.LOG.info("Deleting world directory: {}{}DIM{}", rootDirectory, File.separatorChar, structDim);
-            recursivelyDeleteDirectory(worldDirectory);
-            GerverMod.LOG.info("Deleted world directory: {}{}DIM{}", rootDirectory, File.separatorChar, structDim);
+               GerverMod.LOG.info("Deleting world directory: {}{}DIM{}", rootDirectory, File.separatorChar, dimID);
+               recursivelyDeleteDirectory(worldDirectory);
+               GerverMod.LOG.info("Deleted world directory: {}{}DIM{}", rootDirectory, File.separatorChar, dimID);
 
-            // Re-init dimension.
-            DimensionManager.initDimension(structDim);
-            WorldServer world = DimensionManager.getWorld(structDim);
-            world.rand = new Random();
-            ((StructWorldProvider) world.provider).nextSeed();
+               // Re-init dimension.
+               DimensionManager.initDimension(dimID);
+               WorldServer world = DimensionManager.getWorld(dimID);
+               world.rand = new Random();
+               if (world.provider instanceof StructWorldProvider){
+                   ((StructWorldProvider) world.provider).nextSeed();
+               }
+               else if (world.provider instanceof StructWorldDesert){
+                   ((StructWorldDesert) world.provider).nextSeed();
+               }
 
-            sendMessageToAllPlayers(
-                new ChatComponentText(
-                    EnumChatFormatting.GREEN + "Structure dimension cleared!" + EnumChatFormatting.RESET));
+               sendMessageToAllPlayers(
+                   new ChatComponentText(
+                       EnumChatFormatting.GREEN + "Structure dimension cleared!" + EnumChatFormatting.RESET));
 
-            nextClearMillis = currentTimeMillis + Integer.parseInt(
-                MinecraftServer.getServer()
-                    .getEntityWorld()
-                    .getGameRules()
-                    .getGameRuleStringValue("structureWorldResetTime"));
-            stage = 0;
+               nextClearMillis = currentTimeMillis + Integer.parseInt(
+                   MinecraftServer.getServer()
+                       .getEntityWorld()
+                       .getGameRules()
+                       .getGameRuleStringValue("structureWorldResetTime"));
+               stage = 0;
+           }
         }
     }
 
@@ -143,34 +172,37 @@ public class StructDimHandler {
     }
 
     public static void cancelQueue(EntityPlayer player) {
-        playersQueued.removeBoolean(player);
+        playersQueued.remove(player);
     }
 
-    public static void queueForEnter(EntityPlayer player) {
-        playersQueued.put(player, true);
+    public static void queueForEnter(EntityPlayer player, Integer targetDim) {
+        playersQueued.put(player, targetDim);
     }
 
     public static void queueForLeave(EntityPlayer player) {
-        playersQueued.put(player, false);
+        playersQueued.put(player, 0);
     }
 
-    public static void kick() {
+    public static void kick(int dimID) {
         World world = MinecraftServer.getServer()
-            .worldServerForDimension(structDim);
+            .worldServerForDimension(dimID);
         List<EntityPlayer> players;
-        // noinspection SynchronizeOnNonFinalField
-        synchronized (world.playerEntities) {
-            players = new ObjectArrayList<>(world.playerEntities);
-        }
-        for (EntityPlayer entityPlayer : players) {
-            MinecraftServer.getServer()
-                .getConfigurationManager()
-                .transferPlayerToDimension(
-                    (EntityPlayerMP) entityPlayer,
-                    0,
-                    new StructDimTeleporter(
-                        MinecraftServer.getServer()
-                            .worldServerForDimension(0)));
+        if (world.playerEntities != null) {
+            synchronized (world.playerEntities) {
+                players = new ObjectArrayList<>(world.playerEntities);
+                for (EntityPlayer entityPlayer : players) {
+                    MinecraftServer.getServer()
+                        .getConfigurationManager()
+                        .transferPlayerToDimension(
+                            (EntityPlayerMP) entityPlayer,
+                            0,
+                            new StructDimTeleporter(
+                                MinecraftServer.getServer()
+                                    .worldServerForDimension(0)));
+                }
+            }
+        } else {
+            FMLLog.severe("Player list was null! how did this happen?!");
         }
     }
 

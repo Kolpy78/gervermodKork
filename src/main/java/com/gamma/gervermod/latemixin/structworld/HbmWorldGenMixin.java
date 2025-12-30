@@ -22,7 +22,7 @@ public abstract class HbmWorldGenMixin {
             target = "Lnet/minecraft/world/WorldProvider;dimensionId:I",
             opcode = Opcodes.GETFIELD))
     private int redirectedFieldAccess(WorldProvider instance) {
-        if (instance.dimensionId == StructDimHandler.structDim) return 0;
+        if (instance.dimensionId == StructDimHandler.structDim || instance.dimensionId == StructDimHandler.desertStructDim) {return 0;}
         else return instance.dimensionId;
     }
 

@@ -2,7 +2,13 @@ package com.gamma.gervermod.core;
 
 import static com.gamma.gervermod.dim.struct.StructDimHandler.structDim;
 
+import com.gamma.gervermod.dim.struct.StructWorldDesert;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
@@ -50,7 +56,21 @@ public class GerverMod {
     @Mod.EventHandler
     public void preInit(final FMLPreInitializationEvent event) {
         DimensionManager.registerProviderType(StructDimHandler.structDim, StructWorldProvider.class, false);
+        DimensionManager.registerProviderType(StructDimHandler.desertStructDim, StructWorldDesert.class, false);
         DimensionManager.registerDimension(StructDimHandler.structDim, StructDimHandler.structDim);
+        DimensionManager.registerDimension(StructDimHandler.desertStructDim, StructDimHandler.desertStructDim);
+    }
+
+    @Mod.EventHandler
+    public void Init(final FMLInitializationEvent event){
+        ItemStack coal = new ItemStack(Items.coal);
+        ItemStack skull = new ItemStack(Items.skull);
+        GameRegistry.addRecipe(new ItemStack(Items.skull,1, 1),
+            "AAA",
+            "ABA",
+            "AAA",
+            'A', coal,
+            'B', skull);
     }
 
     @Mod.EventHandler

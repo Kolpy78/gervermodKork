@@ -40,7 +40,7 @@ dependencies {
     //implementation("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
     //implementation("com.github.GTNewHorizons:Angelica:1.0.0-beta68a:dev")
     //implementation("com.falsepattern:endlessids-mc1.7.10:1.6.12:dev")
-    //implementation(rfg.deobf("curse.maven:hbm-ntm-space-1121235:7342818"))
+    implementation(rfg.deobf("curse.maven:hbm-ntm-space-1121235:7342818"))
     //implementation(rfg.deobf("Hbm-s-Nuclear-Tech-GIT:Hbm-s-Nuclear-Tech-GIT:1.0.27_X5545"))
     //implementation("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-770-GTNH:dev")
     //implementation("com.github.GTNewHorizons:ServerUtilities:2.1.52:dev")

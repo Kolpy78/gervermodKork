@@ -2,7 +2,9 @@ package com.gamma.gervermod.command;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -27,9 +29,12 @@ public class StructWorldCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        if (args.length != 1) throw new WrongUsageException("/structworld <enter|leave|cancel|timer>");
+        if (args.length > 2) throw new WrongUsageException("/structworld <enter|leave|cancel>");
 
         if (args[0].equalsIgnoreCase("enter")) {
+            if (args.length < 2){
+                throw new WrongUsageException("/structworld enter <plains|desert>");
+            }
             if (sender == MinecraftServer.getServer()) {
                 sender.addChatMessage(new ChatComponentText("Cannot run this command from console."));
                 return;
@@ -54,7 +59,13 @@ public class StructWorldCommand extends CommandBase {
 
             sender.addChatMessage(new ChatComponentText("Queuing for structure dimension..."));
 
-            StructDimHandler.queueForEnter(player);
+            if (args[1].equalsIgnoreCase("plains")){
+                StructDimHandler.queueForEnter(player, 400);
+            }
+            if (args[1].equalsIgnoreCase("desert")){
+                StructDimHandler.queueForEnter(player, 401);
+            }
+
 
         } else if (args[0].equalsIgnoreCase("leave")) {
             if (sender == MinecraftServer.getServer()) {
@@ -64,7 +75,7 @@ public class StructWorldCommand extends CommandBase {
 
             EntityPlayer player = (EntityPlayer) sender;
 
-            if (player.dimension != StructDimHandler.structDim) {
+            if (player.dimension != StructDimHandler.structDim && player.dimension != StructDimHandler.desertStructDim) {
                 sender.addChatMessage(new ChatComponentText("Not in structure dimension!"));
                 return;
             }
@@ -117,6 +128,11 @@ public class StructWorldCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        String keyword = "enter";
+        boolean hasEnter = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase(keyword));
+        if (args.length == 2 && hasEnter) {
+            return getListOfStringsMatchingLastWord(args, "plains", "desert");
+        }
         return args.length == 1 ? getListOfStringsMatchingLastWord(args, "enter", "leave", "cancel") : null;
     }
 

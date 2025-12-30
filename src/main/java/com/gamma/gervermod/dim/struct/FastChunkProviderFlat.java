@@ -37,7 +37,8 @@ public class FastChunkProviderFlat implements IChunkProvider {
     private final Block[] cachedBlockIDs = new Block[256];
     private final List<MapGenStructure> structureGenerators = new ArrayList<>();
 
-    public FastChunkProviderFlat(World p_i2004_1_) {
+
+    public FastChunkProviderFlat(World p_i2004_1_, Block topBlock, Block middleBlock, Block bottomBlock) {
         this.worldObj = p_i2004_1_;
         this.random = new Random();
         Map<String, String> map1 = new Object2ObjectOpenHashMap<>();
@@ -52,9 +53,9 @@ public class FastChunkProviderFlat implements IChunkProvider {
         // .setTerrainType(WorldType.FLAT);
 
         this.cachedBlockIDs[0] = Blocks.bedrock;
-        Arrays.fill(this.cachedBlockIDs, 1, 68, Blocks.stone);
-        Arrays.fill(this.cachedBlockIDs, 68, 70, Blocks.dirt);
-        this.cachedBlockIDs[70] = Blocks.grass;
+        Arrays.fill(this.cachedBlockIDs, 1, 68, bottomBlock);
+        Arrays.fill(this.cachedBlockIDs, 68, 70, middleBlock);
+        this.cachedBlockIDs[70] = topBlock;
     }
 
     /**
