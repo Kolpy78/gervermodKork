@@ -9,6 +9,7 @@ import net.minecraft.command.WrongUsageException;
 import com.gamma.gervermod.dim.struct.StructDimHandler;
 
 public class AdminStructWorldCommand extends CommandBase {
+
     @Override
     public String getCommandName() {
         return "adminstructworld";
@@ -22,7 +23,7 @@ public class AdminStructWorldCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args[0].equalsIgnoreCase("kick")) {
-            for (int dimID : StructDimHandler.allDims){
+            for (int dimID : StructDimHandler.allDims.keySet()) {
                 StructDimHandler.kick(dimID);
             }
         } else if (args[0].equalsIgnoreCase("disallow")) {

@@ -6,19 +6,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-import com.black_dog20.servertabinfo.client.TpsPage;
+import com.black_dog20.servertabinfo.client.CustomPlayerList;
 import com.black_dog20.servertabinfo.client.objects.IRenderable;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
-@Mixin(TpsPage.class)
-public abstract class ServerTabInfoAIOOBFixMixin {
+@Mixin(CustomPlayerList.class)
+public abstract class PlayerTabAIOOBFixMixin {
 
     @Shadow(remap = false)
     private int currentPage;
 
     @WrapOperation(
-        method = "renderTps",
+        method = "render",
         at = @At(
             value = "INVOKE",
             target = "Lcom/black_dog20/servertabinfo/utility/RenderHelper;getPage(IILjava/util/List;)Ljava/util/List;",
@@ -35,5 +35,4 @@ public abstract class ServerTabInfoAIOOBFixMixin {
             throw new RuntimeException(e);
         }
     }
-
 }

@@ -36,11 +36,13 @@ public class FastChunkProviderFlat implements IChunkProvider {
     private final Random random;
     private final Block[] cachedBlockIDs = new Block[256];
     private final List<MapGenStructure> structureGenerators = new ArrayList<>();
+    private final BiomeGenBase biome;
 
-
-    public FastChunkProviderFlat(World p_i2004_1_, Block topBlock, Block middleBlock, Block bottomBlock) {
+    public FastChunkProviderFlat(World p_i2004_1_, BiomeGenBase biome, Block topBlock, Block middleBlock,
+        Block bottomBlock) {
         this.worldObj = p_i2004_1_;
         this.random = new Random();
+        this.biome = biome;
         Map<String, String> map1 = new Object2ObjectOpenHashMap<>();
         map1.put("size", "1");
         this.structureGenerators.add(new MapGenVillage(map1));
@@ -94,19 +96,13 @@ public class FastChunkProviderFlat implements IChunkProvider {
         }
 
         chunk.generateSkylightMap();
-        BiomeGenBase[] abiomegenbase = this.worldObj.getWorldChunkManager()
-            .loadBlockGeneratorData(null, p_73154_1_ * 16, p_73154_2_ * 16, 16, 16);
 
         if (eidLoaded) {
             short[] ashort = ((ChunkBiomeHook) chunk).getBiomeShortArray();
-            for (l = 0; l < ashort.length; ++l) {
-                ashort[l] = (short) abiomegenbase[l].biomeID;
-            }
+            Arrays.fill(ashort, (short) biome.biomeID);
         } else {
             byte[] abyte = chunk.getBiomeArray();
-            for (l = 0; l < abyte.length; ++l) {
-                abyte[l] = (byte) abiomegenbase[l].biomeID;
-            }
+            Arrays.fill(abyte, (byte) biome.biomeID);
         }
 
         for (MapGenBase mapgenbase : this.structureGenerators)
@@ -145,8 +141,7 @@ public class FastChunkProviderFlat implements IChunkProvider {
             (new WorldGenDungeons()).generate(this.worldObj, this.random, i2, j2, k1);
         }
 
-        BiomeGenBase biomegenbase = this.worldObj.getBiomeGenForCoords(k + 16, l + 16);
-        biomegenbase.decorate(this.worldObj, this.random, k, l);
+        biome.decorate(this.worldObj, this.random, k, l);
     }
 
     /**
@@ -189,7 +184,7 @@ public class FastChunkProviderFlat implements IChunkProvider {
      */
     public List<net.minecraft.world.biome.BiomeGenBase.SpawnListEntry> getPossibleCreatures(EnumCreatureType p_73155_1_,
         int p_73155_2_, int p_73155_3_, int p_73155_4_) {
-        return BiomeGenBase.plains.getSpawnableList(p_73155_1_);
+        return biome.getSpawnableList(p_73155_1_);
     }
 
     public ChunkPosition func_147416_a(World p_147416_1_, String p_147416_2_, int p_147416_3_, int p_147416_4_,

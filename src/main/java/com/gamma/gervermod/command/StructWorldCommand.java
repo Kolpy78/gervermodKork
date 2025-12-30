@@ -2,9 +2,7 @@ package com.gamma.gervermod.command;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -14,6 +12,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 
 import com.gamma.gervermod.dim.struct.StructDimHandler;
+import com.gamma.gervermod.dim.struct.providers.AbstractStructWorldProvider;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 public class StructWorldCommand extends CommandBase {
 
@@ -29,11 +30,11 @@ public class StructWorldCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        if (args.length > 2) throw new WrongUsageException("/structworld <enter|leave|cancel>");
+        if (args.length == 0) throw new WrongUsageException("/structworld <enter|leave|cancel|timer>");
 
         if (args[0].equalsIgnoreCase("enter")) {
-            if (args.length < 2){
-                throw new WrongUsageException("/structworld enter <plains|desert>");
+            if (args.length != 2) {
+                throw new WrongUsageException("/structworld enter <dimension-name>");
             }
             if (sender == MinecraftServer.getServer()) {
                 sender.addChatMessage(new ChatComponentText("Cannot run this command from console."));
@@ -42,30 +43,37 @@ public class StructWorldCommand extends CommandBase {
 
             EntityPlayer player = (EntityPlayer) sender;
 
-            if (player.dimension == StructDimHandler.structDim) {
-                sender.addChatMessage(new ChatComponentText("Already in structure dimension!"));
+            if (StructDimHandler.isPlayerInDim(player)) {
+                sender.addChatMessage(new ChatComponentText("Already in a structure dimension!"));
                 return;
             }
 
             if (player.dimension != 0) {
-                sender.addChatMessage(new ChatComponentText("Must be in overworld to enter structure dimension."));
+                sender.addChatMessage(new ChatComponentText("Must be in overworld to enter a structure dimension."));
                 return;
             }
 
             if (StructDimHandler.isQueued(player)) {
-                sender.addChatMessage(new ChatComponentText("Already queued to enter structure dimension!"));
+                sender.addChatMessage(new ChatComponentText("Already queued to enter a structure dimension!"));
                 return;
             }
 
-            sender.addChatMessage(new ChatComponentText("Queuing for structure dimension..."));
-
-            if (args[1].equalsIgnoreCase("plains")){
-                StructDimHandler.queueForEnter(player, 400);
+            boolean satisfied = false;
+            for (Int2ObjectMap.Entry<AbstractStructWorldProvider> provider : StructDimHandler.allDims
+                .int2ObjectEntrySet()) {
+                if (args[1].equalsIgnoreCase(
+                    provider.getValue()
+                        .getWorldType())) {
+                    sender.addChatMessage(new ChatComponentText("Queuing for the structure dimension..."));
+                    StructDimHandler.queueForEnter(player, provider.getIntKey());
+                    satisfied = true;
+                    break;
+                }
             }
-            if (args[1].equalsIgnoreCase("desert")){
-                StructDimHandler.queueForEnter(player, 401);
-            }
 
+            if (!satisfied) {
+                throw new DimensionNotFoundException();
+            }
 
         } else if (args[0].equalsIgnoreCase("leave")) {
             if (sender == MinecraftServer.getServer()) {
@@ -75,17 +83,17 @@ public class StructWorldCommand extends CommandBase {
 
             EntityPlayer player = (EntityPlayer) sender;
 
-            if (player.dimension != StructDimHandler.structDim && player.dimension != StructDimHandler.desertStructDim) {
-                sender.addChatMessage(new ChatComponentText("Not in structure dimension!"));
+            if (!StructDimHandler.isPlayerInDim(player)) {
+                sender.addChatMessage(new ChatComponentText("Not in a structure dimension!"));
                 return;
             }
 
             if (StructDimHandler.isQueued(player)) {
-                sender.addChatMessage(new ChatComponentText("Already queued to leave structure dimension!"));
+                sender.addChatMessage(new ChatComponentText("Already queued to leave a structure dimension!"));
                 return;
             }
 
-            sender.addChatMessage(new ChatComponentText("Queuing to leave structure dimension..."));
+            sender.addChatMessage(new ChatComponentText("Queuing to leave the structure dimension..."));
 
             StructDimHandler.queueForLeave(player);
         } else if (args[0].equalsIgnoreCase("cancel")) {
@@ -117,7 +125,7 @@ public class StructWorldCommand extends CommandBase {
 
             sender.addChatMessage(
                 new ChatComponentText(
-                    "The structure dimension will clear in " + hours
+                    "The structure dimensions will clear in " + hours
                         + " hours, "
                         + minutes
                         + " minutes, and "
@@ -129,11 +137,25 @@ public class StructWorldCommand extends CommandBase {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         String keyword = "enter";
-        boolean hasEnter = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase(keyword));
-        if (args.length == 2 && hasEnter) {
-            return getListOfStringsMatchingLastWord(args, "plains", "desert");
+        boolean hasEnter = false;
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase(keyword)) {
+                hasEnter = true;
+                break;
+            }
         }
-        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "enter", "leave", "cancel") : null;
+        if (args.length == 2 && hasEnter) {
+            String[] arr = new String[StructDimHandler.allDims.size()];
+            int idx = 0;
+            for (int dimID : StructDimHandler.allDims.keySet()) {
+                arr[idx++] = StructDimHandler.allDims.get(dimID)
+                    .getWorldType()
+                    .toLowerCase();
+            }
+
+            return getListOfStringsMatchingLastWord(args, arr);
+        }
+        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "enter", "leave", "cancel", "timer") : null;
     }
 
     @Override
