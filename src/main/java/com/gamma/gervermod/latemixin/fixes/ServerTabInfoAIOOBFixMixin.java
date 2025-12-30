@@ -30,7 +30,7 @@ public abstract class ServerTabInfoAIOOBFixMixin {
             return original.call(page, itemPerPage, input);
         } catch (IllegalArgumentException e) {
             this.currentPage = 1; // Reset page back to 1, then try again.
-            return original.call(page, itemPerPage, input);
+            return original.call(1, itemPerPage, input);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

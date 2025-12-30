@@ -20,8 +20,7 @@ public abstract class BedrockOreMixin {
         method = "generate(Lnet/minecraft/world/World;IILnet/minecraft/item/ItemStack;Lcom/hbm/inventory/FluidStack;IILnet/minecraft/block/Block;Lnet/minecraft/block/Block;)V",
         at = @At("HEAD"),
         cancellable = true,
-        remap = false
-    )
+        remap = false)
     private static void generate(World world, int x, int z, ItemStack stack, FluidStack acid, int color, int tier,
         Block depthRock, Block targetBlock, CallbackInfo ci) {
         if (world.provider.dimensionId == StructDimHandler.structDim) ci.cancel();

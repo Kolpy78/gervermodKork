@@ -12,7 +12,10 @@
   "mixins": [
     "fixes.AE2SpatialFixMixin",
     "fixes.CloudflaredCommandListFixMixin",
+    "fixes.FluidNetMK2SpeedupMixin",
+    "fixes.UniNodespaceSpeedupMixin",
     "fixes.NEINPEFixMixin",
+    "fixes.NodeNetSpeedupMixin",
     "fixes.PacketNewStorageDimensionMixin",
     "fixes.RandomTickSpeedMixin",
     "fixes.ServerTabInfoAIOOBFixMixin",

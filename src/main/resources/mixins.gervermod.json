@@ -10,6 +10,7 @@
   "target": "@env(DEFAULT)",
   "plugin": "com.gamma.gervermod.core.GervermodMixinPlugin",
   "mixins": [
+    "fixes.DimensionManagerSpeedupMixin",
     "structworld.BiomeDecoratorMixin"
   ],
   "client": []
