@@ -11,7 +11,10 @@
   "plugin": "com.gamma.gervermod.core.GervermodMixinPlugin",
   "mixins": [
     "fixes.AE2SpatialFixMixin",
+    "fixes.ArmorModHandlerSpeedupMixin",
     "fixes.CelestialBodySpeedupMixin",
+    "fixes.ChunkRadiationHandlerSimpleSpeedupMixin",
+    "fixes.ChunkRadiationHandlerSimpleSpeedupMixin$SimpleRadiationPerWorldMixin",
     "fixes.CloudflaredCommandListFixMixin",
     "fixes.FluidNetMK2SpeedupMixin",
     "fixes.NEINPEFixMixin",

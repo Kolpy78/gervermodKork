@@ -17,6 +17,8 @@ import com.gamma.gervermod.dim.struct.StructDimHandler;
 import com.gamma.gervermod.dim.struct.StructDimTeleporter;
 import com.gamma.gervermod.dim.struct.providers.AbstractStructWorldProvider;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.hbm.world.gen.nbt.NBTStructure;
+import com.hbm.world.gen.nbt.SpawnCondition;
 
 import appeng.api.features.IWorldGen;
 import appeng.core.Api;
@@ -58,6 +60,37 @@ public class GerverMod {
             AbstractStructWorldProvider provider = dimEntry.getValue();
             DimensionManager.registerProviderType(dimID, provider.getClass(), false);
             DimensionManager.registerDimension(dimID, dimID);
+        }
+
+        for (String s : NBTStructure.listStructures()) {
+            SpawnCondition condition = NBTStructure.getStructure(s);
+            for (int dimID : StructDimHandler.allDims.keySet()) {
+                SpawnCondition newCondition = new SpawnCondition(s + dimID) {
+
+                    {
+                        this.maxHeight = condition.maxHeight;
+                        this.minHeight = condition.minHeight;
+                        this.structure = condition.structure;
+                        this.pools = condition.pools;
+                        this.startPool = condition.startPool;
+                        this.spawnWeight = condition.spawnWeight;
+                        this.checkCoordinates = (WorldCoordinate worldCoordinate) -> {
+                            int x = worldCoordinate.coords.chunkXPos * 16;
+                            int z = worldCoordinate.coords.chunkZPos * 16;
+                            if (!condition.canSpawn.test(worldCoordinate.world.getBiomeGenForCoords(x, z)))
+                                return false;
+
+                            int frequency = Integer.valueOf(
+                                worldCoordinate.world.getGameRules()
+                                    .getGameRuleStringValue("structureFrequency" + dimID))
+                                .intValue();
+
+                            return worldCoordinate.rand.nextInt(frequency) == 0;
+                        };
+                    }
+                };
+                NBTStructure.registerStructure(dimID, newCondition);
+            }
         }
     }
 
@@ -101,6 +134,12 @@ public class GerverMod {
             .hasRule("structureWorldResetTime"))
             world.getGameRules()
                 .addGameRule("structureWorldResetTime", "86400000");
+        for (int dimID : StructDimHandler.allDims.keySet()) {
+            if (!world.getGameRules()
+                .hasRule("structureFrequency" + dimID))
+                world.getGameRules()
+                    .addGameRule("structureFrequency" + dimID, "1500");
+        }
     }
 
     @SubscribeEvent

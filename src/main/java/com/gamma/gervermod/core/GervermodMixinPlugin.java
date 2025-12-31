@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 
 @LateMixin
 public class GervermodMixinPlugin implements IMixinConfigPlugin, ILateMixinLoader {
@@ -52,14 +52,6 @@ public class GervermodMixinPlugin implements IMixinConfigPlugin, ILateMixinLoade
     @Nonnull
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
-        return ObjectArrayList.of(
-            "fixes.RandomTickSpeedMixin",
-            "structworld.BedrockOreMixin",
-            "structworld.DepthDepositMixin",
-            "structworld.DungeonToolboxMixin",
-            "structworld.EtFuturumLateWorldGeneratorMixin",
-            "structworld.EtFuturumWorldGeneratorMixin",
-            "structworld.HbmWorldGenMixin",
-            "structworld.ThreadBackupMixin");
+        return ObjectLists.emptyList();
     }
 }
